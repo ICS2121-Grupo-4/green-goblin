@@ -45,7 +45,7 @@ class User:
 class MoviesParser(Parser):
     def parse(self):
         movies = []
-        with open(self.path) as movies_file:
+        with open(self.path, encoding="latin-1") as movies_file:
             for movie_line in movies_file:
                 movies.append(Movie(*movie_line.strip().split("::")))
         return movies
@@ -56,7 +56,3 @@ class Movie:
         self.movie_id = movie_id
         self.title = title
         self.genre = genres
-
-if __name__ == '__main__':
-    ratings_parser = RatingsParser("../movies-dataset/ml-1m/ratings.dat")
-    print(len(ratings_parser.parse()))

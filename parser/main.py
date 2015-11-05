@@ -1,74 +1,62 @@
-__author__ = 'Carlos Tomi'
-import functools
-#with open('ml-100k/README', 'r') as file:
-#    print(file.read())
-
-#with open('ml-100k/u.item', 'r') as file:  ## movie id | movie title | release date | video release date |
-#              #IMDb URL | unknown | Action | Adventure | Animation |
-#              #Children's | Comedy | Crime | Documentary | Drama | Fantasy |
-#              #Film-Noir | Horror | Musical | Mystery | Romance | Sci-Fi |
-#              #Thriller | War | Western |
-#              pass
-
-#with open('ml-100k/u.genre', 'r') as file:  ## user id | age | gender | occupation | zip code
-#    pass
+#!/usr/local/bin python3
+# -*- encoding: utf-8 -*-
 
 
-class Evaluacion:
+class Parser:
+    def __init__(self, path):
+        self.path = path
 
-    def __init__(self, str):
-        s = str.split('\t')
-        self.user_id = s[0]
-        self.item_id = s[1]
-        self.rating = s[2]
-        self.timestamp = s[3]
+
+class RatingsParser(Parser):
+    def parse(self):
+        ratings = []
+        with open(self.path) as ratings_file:
+            for rating_line in ratings_file:
+                ratings.append(Rating(*rating_line.strip().split("::")))
+        return ratings
+
+
+class Rating:
+    def __init__(self, user_id, movie_id, rating, timestamp):
+        self.user_id = user_id
+        self.movie_id = movie_id
+        self.rating = rating
+        self.timestamp = timestamp
+
+
+class UsersParser(Parser):
+    def parse(self):
+        users = []
+        with open(self.path) as users_file:
+            for user_line in users_file:
+                users.append(User(*user_line.strip().split("::")))
+        return users
 
 
 class User:
-    id = 0
-    def __init__(self, id):
-        self.id = int(id)
-        self.peliculas_evaluadas = 0
-        if self.id > User.id:
-            User.id = self.id
+    def __init__(self, user_id, gender, age, ocupation, zip_code):
+        self.user_id = user_id
+        self.gender = gender
+        self.age = age
+        self.ocupation = ocupation
+        self.zip_code = zip_code
 
 
-class Pelicula:
-    id = 0
-    def __init__(self, id):
-        self.id = int(id)
-        self.rating_total = 0
-        self.evaluaciones = 0
-
-    def rating_promedio(self):
-        self.rating_promedio = self.rating_total/self.evaluaciones
+class MoviesParser(Parser):
+    def parse(self):
+        movies = []
+        with open(self.path) as movies_file:
+            for movie_line in movies_file:
+                movies.append(Movie(*movie_line.strip().split("::")))
+        return movies
 
 
-evaluaciones = []
+class Movie:
+    def __init__(self, movie_id, title, genres):
+        self.movie_id = movie_id
+        self.title = title
+        self.genre = genres
 
-with open('ml-100k/u.data', 'r') as file:   ## user id | item id | rating | timestamp.
-    lista = file.readlines()
-    for i in range(len(lista)):
-        evaluaciones.append(Evaluacion(lista[i]))
-
-# usuarios = {}
-# peliculas = {}
-# for ev in evaluaciones:
-#     if int(ev.user_id) >= User.id:
-#         usuarios.update({int(ev.user_id): User(ev.user_id)})
-#     if int(ev.user_id) >= User.id:
-#         usuarios.update({int(ev.user_id): User(ev.user_id)})
-#     usuarios[int(ev.user_id)].peliculas_evaluadas += 1
-#     peliculas.update({ev.item_id: Pelicula(ev.item_id)})
-#     peliculas[ev.item_id].rating_total += int(ev.rating)
-#     peliculas[ev.item_id].evaluaciones += 1
-#
-# for p in peliculas:
-#     p.rating_promedio()
-#
-
-
-
-
-
-
+if __name__ == '__main__':
+    ratings_parser = RatingsParser("../movies-dataset/ml-1m/ratings.dat")
+    print(len(ratings_parser.parse()))

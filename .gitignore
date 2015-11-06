@@ -1,5 +1,9 @@
 #### joe made this: http://goel.io/joe
 
+*.matrix
+*.ipynb
+.ipynb_checkpoints
+
 #####=== Python ===#####
 
 # Byte-compiled / optimized / DLL files

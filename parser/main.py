@@ -18,10 +18,10 @@ class RatingsParser(Parser):
 
 class Rating:
     def __init__(self, user_id, movie_id, rating, timestamp):
-        self.user_id = user_id
-        self.movie_id = movie_id
-        self.rating = rating
-        self.timestamp = timestamp
+        self.user_id = int(user_id)
+        self.movie_id = int(movie_id)
+        self.rating = int(rating)
+        self.timestamp = int(timestamp)
 
 
 class UsersParser(Parser):
@@ -35,10 +35,10 @@ class UsersParser(Parser):
 
 class User:
     def __init__(self, user_id, gender, age, ocupation, zip_code):
-        self.user_id = user_id
+        self.user_id = int(user_id)
         self.gender = gender
-        self.age = age
-        self.ocupation = ocupation
+        self.age = int(age)
+        self.ocupation = int(ocupation)
         self.zip_code = zip_code
 
 
@@ -53,6 +53,6 @@ class MoviesParser(Parser):
 
 class Movie:
     def __init__(self, movie_id, title, genres):
-        self.movie_id = movie_id
+        self.movie_id = int(movie_id)
         self.title = title
         self.genre = genres

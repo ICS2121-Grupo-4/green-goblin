@@ -6,7 +6,7 @@ import os
 import sys
 import pickle
 import parser.main as parser
-# import fom.main as fom
+from sklearn import linear_model
 
 
 def build_matrix():
@@ -58,12 +58,44 @@ def lasso_function(x, tau, A, Y):
 def read_matrix():
     with open("./A.matrix", "rb") as matrix_file:
         A = pickle.load(matrix_file)
-    print(np.shape(A))
+    return A
+
+
+def save_model(model_id, coef):
+    with open("./models/{}.model".format(model_id), "wb") as model_file:
+        pickle.dump(coef, model_file)
+
+
+def get_last_fitted_model():
+    return (
+        max(map(
+            lambda file: int(file.split(".")[0]),
+            list(os.walk("./models"))[0][2]
+        ))
+    )
+
+
+def fit(resume=True):
+    offset = get_last_fitted_model() + 1 if resume else 0
+    A = read_matrix()
+    shape = np.shape(A)
+    for col in range(offset, shape[1]):
+        A_prima = A.T[col+1:].T
+        Y = A.T[col]
+        clf = linear_model.LassoLarsCV(n_jobs=1)
+        try:
+            clf.fit(A_prima, Y)
+            print(col, col/shape[1], clf.alpha)
+            save_model(col, clf)
+        except ValueError:
+            print("ValueError...")
+
 
 if __name__ == '__main__':
     actions = {
         "build": build_matrix,
-        "read": read_matrix
+        "read": read_matrix,
+        "fit": fit
     }
 
     try:

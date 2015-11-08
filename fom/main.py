@@ -4,9 +4,10 @@ import numpy as np
 
 
 class FOM:
-    def __init__(self, function, x0, step, stop):
+    def __init__(self, function, x0, args=(), step=0.1, stop=0.001):
+        print("Constructing FOM instance...")
         self.step = step
-        self.function = function
+        self.function = lambda x: function(x, *args)
         self.stop = stop
         self.x0 = x0
 
@@ -42,6 +43,7 @@ class FOM:
     def numerical_gradient(self, x, gradient_epsilon=0.00001):
         grad = np.zeros(len(x))
         for i in range(len(x)):
+            print(i/len(x))
             temp_x = [np.copy(x), np.copy(x)]
             temp_x[0][i] = temp_x[0][i] + gradient_epsilon
             temp_x[1][i] = temp_x[1][i] - gradient_epsilon

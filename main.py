@@ -9,7 +9,9 @@ import parser.main as parser
 from sklearn import linear_model
 
 
+# Construye matriz de datos y la guarda serializada en archivo binario.
 def build_matrix():
+    # Parsear los datos del dataset.
     FILE_PATH = os.path.dirname(__file__)
     MOVIES_FILE_PATH = os.path.join(
         FILE_PATH, "./movies-dataset/ml-1m/movies.dat")
@@ -43,6 +45,7 @@ def build_matrix():
 
     A = np.array(A)
 
+    # Guarda objeto serializado a un archivo binario.
     with open("./A.matrix", "wb") as file:
         pickle.dump(A, file)
 
@@ -50,22 +53,26 @@ def build_matrix():
     print(len(movies), len(ratings), len(users))
 
 
+# Deprecada. Actualmente estamos usando módulo `sklearn`.
 def lasso_function(x, tau, A, Y):
     return tau * np.linalg.norm(x, ord=1) + \
         (1/2) * np.linalg.norm(A.dot(x) - Y, ord=2)**2
 
 
+# Lee archivo binario de la matriz de datos serializadas y la retorna.
 def read_matrix():
     with open("./A.matrix", "rb") as matrix_file:
         A = pickle.load(matrix_file)
     return A
 
 
+# Guarda un modelo serializado en un archivo binario.
 def save_model(model_id, coef):
     with open("./models/{}.model".format(model_id), "wb") as model_file:
         pickle.dump(coef, model_file)
 
 
+# Retorna el id más grande de los modelos serializados en archivos.
 def get_last_fitted_model():
     return (
         max(map(
@@ -75,17 +82,30 @@ def get_last_fitted_model():
     )
 
 
+# Función que construye los modelos
 def fit(resume=True):
+    # Obtiene el id del ultimo modelo calculado, a fin de empezar el cálculo
+    # desde esa columna de la matriz y no desde cero.
     offset = get_last_fitted_model() + 1 if resume else 0
+    # Lee y calcula la dimensión de la matriz de datos.
     A = read_matrix()
     shape = np.shape(A)
+    # Para cada columna desde el offset en adelante, calcula el modelo.
     for col in range(offset, shape[1]):
+        # A_prima: matriz A sin la columna de la película para la cual se está
+        #          construyendo el modelo.
+        # Y: columna de la película para la cual se está construyendo el
+        #   modelo.
         A_prima = A.T[col+1:].T
         Y = A.T[col]
+        # LassoVarsCV hace cross-validation (elección del tau) automáticamente.
         clf = linear_model.LassoLarsCV(n_jobs=1)
         try:
             clf.fit(A_prima, Y)
             print(col, col/shape[1], clf.alpha)
+            # Guarda el modelo obtenido como archivo. Si se quiere acceder a
+            # las componentes del vector del modelo se debe acceder al
+            # atributo `coef_` del objeto LassoVarsCV.
             save_model(col, clf)
         except ValueError:
             print("ValueError...")
@@ -94,7 +114,6 @@ def fit(resume=True):
 if __name__ == '__main__':
     actions = {
         "build": build_matrix,
-        "read": read_matrix,
         "fit": fit
     }
 

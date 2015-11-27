@@ -2,6 +2,7 @@
 # -*- encoding: utf-8 -*-
 import numpy as np
 # import scipy.optimize
+import re
 import os
 import sys
 import pickle
@@ -74,12 +75,19 @@ def save_model(model_id, coef):
 
 # Retorna el id más grande de los modelos serializados en archivos.
 def get_last_fitted_model():
-    return (
-        max(map(
-            lambda file: int(file.split(".")[0]),
-            list(os.walk("./models"))[0][2]
-        ))
-    )
+    try:
+        return (
+            max(map(
+                lambda file: int(file.split(".")[0]),
+                filter(
+                    lambda p: re.match("^.*\.model$", p),
+                    list(os.walk("./models"))[0][2]
+                )
+            ))
+        )
+    # No existen modelos.
+    except ValueError:
+        return 0
 
 
 # Función que construye los modelos
@@ -96,10 +104,10 @@ def fit(resume=True):
         #          construyendo el modelo.
         # Y: columna de la película para la cual se está construyendo el
         #   modelo.
-        A_prima = A.T[col+1:].T
-        Y = A.T[col]
+        A_prima = np.delete(A, col, axis=1)
+        Y = A[:, col]
         # LassoVarsCV hace cross-validation (elección del tau) automáticamente.
-        clf = linear_model.LassoLarsCV(n_jobs=1)
+        clf = linear_model.LassoLarsCV(n_jobs=1, max_iter=500)
         try:
             clf.fit(A_prima, Y)
             print(col, col/shape[1], clf.alpha)

@@ -1,13 +1,15 @@
 #!/usr/local/bin python3
 # -*- encoding: utf-8 -*-
 import numpy as np
-# import scipy.optimize
 import re
 import os
 import sys
 import pickle
 import parser.main as parser
 from sklearn import linear_model
+
+# Without trailing slash
+MODELS_FOLDER_PATH = "../models"
 
 
 # Construye matriz de datos y la guarda serializada en archivo binario.
@@ -68,9 +70,10 @@ def read_matrix():
 
 
 # Guarda un modelo serializado en un archivo binario.
-def save_model(model_id, coef):
-    with open("./models/{}.model".format(model_id), "wb") as model_file:
-        pickle.dump(coef, model_file)
+def save_model(model_id, model):
+    with open("{}/{}.model".format(MODELS_FOLDER_PATH, model_id), "wb") \
+            as model_file:
+        pickle.dump(model, model_file)
 
 
 # Retorna el id más grande de los modelos serializados en archivos.
@@ -81,7 +84,7 @@ def get_last_fitted_model():
                 lambda file: int(file.split(".")[0]),
                 filter(
                     lambda p: re.match("^.*\.model$", p),
-                    list(os.walk("./models"))[0][2]
+                    list(os.walk(MODELS_FOLDER_PATH))[0][2]
                 )
             ))
         )
@@ -119,10 +122,29 @@ def fit(resume=True):
             print("ValueError...")
 
 
+def build_models_matrix():
+    # TODO: Probably a better way to do this.
+    num_models = get_last_fitted_model() + 1
+    num_components = num_models - 1
+    matrix = []
+    for i in range(num_models):
+        try:
+            with open(MODELS_FOLDER_PATH + "/{}.model".format(i), "rb") as \
+                    model_file:
+                model = pickle.load(model_file)
+                matrix.append(model.coef_)
+        except FileNotFoundError:
+            matrix.append(np.zeros(num_components))
+    np_matrix = np.matrix(matrix)
+    with open("./MODELS.matrix", "wb") as models_file:
+        pickle.dump(np_matrix, models_file)
+
+
 if __name__ == '__main__':
     actions = {
         "build": build_matrix,
-        "fit": fit
+        "fit": fit,
+        "build_models_matrix": build_models_matrix
     }
 
     try:
